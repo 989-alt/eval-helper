@@ -5,28 +5,60 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>평어 도우미 · 교과 / 창체 / 행발</title>
   <meta name="description" content="교사용 평어 생성 도우미. 내장 무료 엔진과 내 AI 키로 교과·창의적체험활동·행동발달 평어를 한 번에." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9D%3C/text%3E%3C/svg%3E" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    body { font-family: 'Pretendard', system-ui, -apple-system, 'Malgun Gothic', sans-serif; }
-    .tab-active { color:#4f46e5; border-color:#4f46e5; }
+    body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; background-color: #f3f4f6; }
+
+    /* 로딩 스피너 */
+    .loader {
+      border: 3px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      width: 18px; height: 18px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* 패널 등장 */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .animate-fade-in { animation: fadeIn .25s ease-out; }
+
+    /* 숫자 입력 화살표 숨김 */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+    /* 스크롤바 */
+    .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+    /* 토스트 */
+    .toast-notification {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(10px);
+      background-color: rgba(31, 41, 55, 0.95); color: #fff;
+      padding: 12px 24px; border-radius: 50px; z-index: 9999;
+      font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,.15);
+      opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none;
+      display: flex; align-items: center; gap: 8px; white-space: pre-line; text-align: center;
+    }
+    .toast-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen">
-  <header class="bg-white border-b border-slate-200">
-    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
-      <div class="text-xl">📝</div>
-      <div>
-        <h1 class="text-lg font-bold leading-tight">평어 도우미</h1>
-        <p class="text-xs text-slate-500">교과 · 창의적 체험활동 · 행동발달 — 내장 무료 엔진 + 내 AI(선택)</p>
-      </div>
-    </div>
-    <nav id="tabbar" class="max-w-5xl mx-auto px-4 flex gap-1 text-sm"></nav>
-  </header>
-  <main id="app" class="max-w-5xl mx-auto px-4 py-6"></main>
-  <footer class="max-w-5xl mx-auto px-4 py-8 text-xs text-slate-400">
-    모든 처리는 브라우저에서만 이루어지며 입력 내용과 API 키는 서버로 전송되지 않습니다.
-  </footer>
+<body class="text-gray-800 min-h-screen">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <header class="text-center mb-8">
+      <h1 class="text-3xl font-extrabold text-gray-900">📝 평어 도우미</h1>
+      <p class="text-gray-500 text-sm mt-1">교과 · 창의적 체험활동 · 행동발달 — 내장 무료 엔진 + 내 AI(선택)</p>
+    </header>
+    <nav id="tabbar" class="flex flex-wrap gap-2 mb-6 justify-center text-sm"></nav>
+    <main id="app"></main>
+    <footer class="pt-8 text-center text-xs text-gray-400">
+      모든 처리는 브라우저에서만 이루어지며 입력 내용과 API 키는 서버로 전송되지 않습니다.
+    </footer>
+  </div>
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>

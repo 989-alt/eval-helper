@@ -25,12 +25,11 @@ export function toast(msg, ms = 1600) {
   if (!el) {
     el = document.createElement('div');
     el.id = 'toast';
-    el.className =
-      'fixed left-1/2 bottom-8 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-slate-800 text-white text-sm shadow-lg opacity-0 transition-opacity pointer-events-none';
+    el.className = 'toast-notification';
     document.body.appendChild(el);
   }
   el.textContent = msg;
-  el.style.opacity = '1';
+  el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.style.opacity = '0'; }, ms);
+  toastTimer = setTimeout(() => { el.classList.remove('show'); }, ms);
 }

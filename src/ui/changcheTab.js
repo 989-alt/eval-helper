@@ -6,19 +6,19 @@ import { copyLine, sectionTitle, notice } from './components.js';
 import { toast } from '../lib/clipboard.js';
 
 export function renderChangche(root) {
-  const input = h('textarea', { class: css.input + ' w-full h-28', placeholder: '창의적 체험활동 특기사항 원문을 한 문장 입력하세요.\n예: 여러 체험활동에 적극적으로 참여하고 친구들과 협력하는 모습을 보임.' });
-  const countInput = h('input', { class: css.input + ' w-20', type: 'number', min: '1', max: '40', value: '10' });
-  const out = h('div', { class: 'mt-4' });
+  const input = h('textarea', { class: css.input + ' w-full h-28 focus:ring-purple-500', placeholder: '창의적 체험활동 특기사항 원문을 한 문장 입력하세요.\n예: 여러 체험활동에 적극적으로 참여하고 친구들과 협력하는 모습을 보임.' });
+  const countInput = h('input', { class: css.input + ' w-20 text-right focus:ring-purple-500', type: 'number', min: '1', max: '40', value: '10' });
+  const out = h('div', { class: 'mt-6' });
 
   function show(list) {
     if (!list.length) { mount(out, notice('생성 결과가 없습니다. 원문을 확인하세요.', 'warn')); return; }
-    mount(out, h('div', { class: css.card },
-      sectionTitle(list.length + '개 생성', '클릭하여 복사하세요.'),
-      h('div', {}, ...list.map((t, i) => copyLine(t, { prefix: (i + 1) + '.' })))
+    mount(out, h('div', { class: css.card + ' animate-fade-in' },
+      sectionTitle(list.length + '개 생성', '문장을 클릭하면 복사됩니다.'),
+      h('div', { class: 'space-y-1' }, ...list.map((t, i) => copyLine(t, { prefix: (i + 1) + '.', accent: 'purple' })))
     ));
   }
 
-  const builtinBtn = h('button', { class: css.btn + ' ' + css.btnPrimary }, '내장 무료 생성');
+  const builtinBtn = h('button', { class: css.cta + ' bg-purple-600 hover:bg-purple-700' }, '내장 무료 생성');
   builtinBtn.addEventListener('click', () => {
     const text = input.value.trim();
     if (!text) { toast('원문을 입력하세요'); return; }
@@ -26,7 +26,7 @@ export function renderChangche(root) {
     show(vary(text, n));
   });
 
-  const aiBtn = h('button', { class: css.btn + ' ' + css.btnGhost }, 'AI로 생성');
+  const aiBtn = h('button', { class: 'px-5 py-3 rounded-lg font-bold border border-purple-200 text-purple-700 hover:bg-purple-50 transition whitespace-nowrap disabled:opacity-50' }, 'AI로 생성');
   aiBtn.addEventListener('click', async () => {
     const ai = getState().ai;
     const text = input.value.trim();
@@ -45,12 +45,14 @@ export function renderChangche(root) {
   });
 
   mount(root,
-    h('div', { class: css.card },
+    h('div', { class: css.card + ' animate-fade-in' },
       sectionTitle('창의적 체험활동 특기사항', '원문 한 문장을 여러 학생에게 조금씩 다르게 쓸 수 있도록 변형합니다.'),
       input,
       h('div', { class: 'flex items-center gap-2 mt-3' },
-        h('span', { class: css.label }, '개수'), countInput,
-        builtinBtn, aiBtn,
+        h('span', { class: css.label }, '생성 개수'), countInput, h('span', { class: 'text-sm text-gray-500' }, '개'),
+      ),
+      h('div', { class: 'flex flex-col sm:flex-row gap-2 mt-5' },
+        h('div', { class: 'flex-1' }, builtinBtn), aiBtn,
       ),
     ),
     out,

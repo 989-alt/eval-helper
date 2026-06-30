@@ -29,7 +29,7 @@ export function renderAI(root) {
           const id = m.id;
           const sel = id === getState().ai.model;
           const row = h('label', {
-            class: 'flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer border ' + (sel ? 'border-indigo-400 bg-indigo-50' : 'border-transparent hover:bg-slate-50'),
+            class: 'flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer border ' + (sel ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'),
           },
             h('input', { type: 'radio', name: 'model', checked: sel }),
             h('span', { class: 'text-sm font-mono flex-1' }, id),
@@ -66,7 +66,7 @@ export function renderAI(root) {
         h('div', {}, loadBtn),
       ),
       modelWrap,
-      h('p', { class: 'text-xs text-slate-400 mt-3' }, 'OpenAI는 브라우저에서 직접 호출이 제한될 수 있습니다. 이 경우 Google 또는 Anthropic 키 사용을 권장합니다.'),
+      h('p', { class: 'text-xs text-gray-400 mt-3' }, 'OpenAI는 브라우저에서 직접 호출이 제한될 수 있습니다. 이 경우 Google 또는 Anthropic 키 사용을 권장합니다.'),
     )
   );
   renderModels(ai.models);

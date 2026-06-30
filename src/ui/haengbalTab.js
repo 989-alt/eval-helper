@@ -15,15 +15,18 @@ export function renderHaengbal(root) {
   const lenInput = h('input', { class: css.input + ' w-24', type: 'number', min: '80', max: '600', value: '200' });
   const out = h('div', { class: 'mt-4' });
 
+  const CHIP_BASE = 'cursor-pointer text-sm px-3 py-2 rounded border text-center select-none transition';
+  const CHIP_OFF = CHIP_BASE + ' border-gray-200 text-gray-600 hover:bg-gray-50';
+  const CHIP_ON = CHIP_BASE + ' bg-green-100 border-green-500 text-green-800 font-bold';
   const chips = Object.entries(TRAITS).map(([cat, items]) =>
-    h('div', { class: 'mb-2' },
-      h('div', { class: css.label + ' mb-1' }, cat),
-      h('div', { class: 'flex flex-wrap gap-1.5' },
+    h('div', { class: 'mb-4' },
+      h('h4', { class: 'font-bold text-sm text-gray-800 mb-2 border-b pb-1' }, cat),
+      h('div', { class: 'flex flex-wrap gap-2' },
         ...items.map((t) => {
-          const b = h('button', { class: css.btn + ' ' + css.btnGhost + ' text-xs' }, t);
+          const b = h('button', { class: CHIP_OFF }, t);
           b.addEventListener('click', () => {
-            if (selected.has(t)) { selected.delete(t); b.className = css.btn + ' ' + css.btnGhost + ' text-xs'; }
-            else { selected.add(t); b.className = css.btn + ' text-xs bg-indigo-600 text-white'; }
+            if (selected.has(t)) { selected.delete(t); b.className = CHIP_OFF; }
+            else { selected.add(t); b.className = CHIP_ON; }
           });
           return b;
         })
@@ -31,7 +34,7 @@ export function renderHaengbal(root) {
     )
   );
 
-  const genBtn = h('button', { class: css.btn + ' ' + css.btnPrimary }, 'AI로 행동발달 생성');
+  const genBtn = h('button', { class: css.cta + ' bg-green-600 hover:bg-green-700 mt-2' }, 'AI로 행동발달 생성');
   genBtn.addEventListener('click', async () => {
     const ai = getState().ai;
     if (!ai.apiKey || !ai.model) { mount(out, notice('행동발달은 AI 생성을 권장합니다. AI 설정에서 키와 모델을 선택하세요.', 'warn')); return; }
@@ -43,17 +46,20 @@ export function renderHaengbal(root) {
     genBtn.textContent = '생성 중…'; genBtn.disabled = true;
     try {
       const res = await generate(ai.provider, ai.apiKey, ai.model, prompt);
-      mount(out, h('div', { class: css.card }, sectionTitle('생성 결과'), copyLine(res.trim())));
+      mount(out, h('div', { class: 'bg-white shadow rounded-lg border border-gray-200 overflow-hidden animate-fade-in' },
+        h('div', { class: 'bg-green-50 px-4 py-3 border-b border-green-100 font-bold text-green-900 text-sm' }, '생성 결과 · 클릭하여 복사'),
+        h('div', { class: 'p-2' }, copyLine(res.trim(), { accent: 'green' }))));
     } catch (e) { mount(out, notice('AI 생성 실패: ' + (e?.message || e), 'warn')); }
     finally { genBtn.textContent = 'AI로 행동발달 생성'; genBtn.disabled = false; }
   });
 
   mount(root,
-    h('div', { class: css.card },
+    h('div', { class: css.card + ' animate-fade-in' },
       sectionTitle('행동발달 (행동특성 및 종합의견)', '특성을 선택해 문장을 생성합니다. 정확하고 자연스러운 서술을 위해 AI 사용을 권장합니다.'),
       ...chips,
-      h('div', { class: 'flex items-center gap-2 mt-2' },
-        h('span', { class: css.label }, '분량(자)'), lenInput, genBtn),
+      h('div', { class: 'flex items-center gap-2 mt-3 pt-3 border-t border-gray-100' },
+        h('span', { class: css.label }, '분량(자)'), lenInput),
+      genBtn,
     ),
     out,
   );

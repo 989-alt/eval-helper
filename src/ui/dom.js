@@ -21,13 +21,15 @@ export function h(tag, props = {}, ...children) {
 export function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
 export function mount(node, ...children) { clear(node); for (const c of children.flat()) if (c) node.append(c); }
 
-// 공통 버튼/입력 스타일
+// 공통 버튼/입력 스타일 (레퍼런스 evaluationapp 디자인 언어)
 export const css = {
-  btn: 'px-3 py-1.5 rounded-md text-sm font-medium transition',
-  btnPrimary: 'bg-indigo-600 hover:bg-indigo-700 text-white',
-  btnGhost: 'bg-slate-100 hover:bg-slate-200 text-slate-700',
-  btnDanger: 'bg-rose-50 hover:bg-rose-100 text-rose-600',
-  input: 'border border-slate-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300',
-  card: 'bg-white rounded-xl border border-slate-200 p-4 shadow-sm',
-  label: 'text-xs font-semibold text-slate-500',
+  btn: 'px-4 py-2 rounded-md text-sm font-bold transition',
+  btnPrimary: 'bg-blue-600 hover:bg-blue-700 text-white shadow',
+  btnGhost: 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50',
+  btnDanger: 'bg-white text-red-500 border border-red-200 hover:bg-red-50',
+  input: 'p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none bg-white',
+  card: 'bg-white shadow rounded-lg p-6 border border-gray-200',
+  label: 'font-bold text-gray-700 text-sm',
+  // 전체폭 메인 액션 버튼 (색상은 호출부에서 지정)
+  cta: 'w-full py-3 rounded-lg text-white font-bold text-lg shadow transition disabled:bg-gray-400',
 };
