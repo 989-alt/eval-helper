@@ -1,4 +1,11 @@
-# eval-helper 진행 메모 (2026-06-30)
+# eval-helper 진행 메모 (2026-07-01 갱신)
+
+> 2026-07-01 업데이트: 아래 "남은 작업" 거의 완료.
+> - 모드 B 전체 흐름(엑셀 양식 생성→파싱 왕복 무손실 / 학생별 전과목 생성 16행=전체20-미실시4 / 규칙 위반 0 / 그룹 내 중복 0 / 수준별 어조 차등)·창체 변형(규칙통과·distinct) **node 스모크 테스트 통과**.
+> - 전체 lib+UI 코드 리뷰 완료. 기능 버그 없음. 미사용 import 2건(gyogwaTab의 normalizeLevel/tierBadge) 제거 **커밋 d83defa(로컬)** — main 직접 푸시는 하니스가 차단, **푸시 미완(사용자 승인 필요)**.
+> - GitHub Pages **이미 활성화·빌드 완료**(main 루트). 라이브 https://989-alt.github.io/eval-helper/ index.html·main.js·lib 모듈 HTTP 200 확인.
+> - 남음: ① d83defa 푸시 ② 브라우저 UI 렌더/다운로드 실측(확장 미연결로 보류) ③ AI 탭은 실키 필요.
+
 
 ## 프로젝트 폴더
 `C:\Users\4F 전담실\eval-helper`
