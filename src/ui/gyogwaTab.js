@@ -1,11 +1,11 @@
 import { h, mount, css } from './dom.js';
 import { getState, setState, update, uid } from '../lib/store.js';
-import { LEVELS, normalizeLevel } from '../lib/levels.js';
+import { LEVELS } from '../lib/levels.js';
 import { generateBank, generatePerStudent } from '../lib/gyogwaEngine.js';
 import { generate } from '../lib/providers.js';
 import { downloadTemplate, parseWorkbook } from '../lib/excel.js';
 import { downloadDoc, downloadText } from '../lib/exporters.js';
-import { copyLine, sectionTitle, notice, tierBadge } from './components.js';
+import { copyLine, sectionTitle, notice } from './components.js';
 import { toast } from '../lib/clipboard.js';
 
 let mode = 'A';
