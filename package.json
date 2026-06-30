@@ -1,0 +1,10 @@
+{
+  "name": "eval-helper",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "교사 평어 도우미 (교과/창체/행발) — 빌드리스 정적 앱",
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

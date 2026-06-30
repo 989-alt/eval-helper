@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>평어 도우미 · 교과 / 창체 / 행발</title>
+  <meta name="description" content="교사용 평어 생성 도우미. 내장 무료 엔진과 내 AI 키로 교과·창의적체험활동·행동발달 평어를 한 번에." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: 'Pretendard', system-ui, -apple-system, 'Malgun Gothic', sans-serif; }
+    .tab-active { color:#4f46e5; border-color:#4f46e5; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <header class="bg-white border-b border-slate-200">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+      <div class="text-xl">📝</div>
+      <div>
+        <h1 class="text-lg font-bold leading-tight">평어 도우미</h1>
+        <p class="text-xs text-slate-500">교과 · 창의적 체험활동 · 행동발달 — 내장 무료 엔진 + 내 AI(선택)</p>
+      </div>
+    </div>
+    <nav id="tabbar" class="max-w-5xl mx-auto px-4 flex gap-1 text-sm"></nav>
+  </header>
+  <main id="app" class="max-w-5xl mx-auto px-4 py-6"></main>
+  <footer class="max-w-5xl mx-auto px-4 py-8 text-xs text-slate-400">
+    모든 처리는 브라우저에서만 이루어지며 입력 내용과 API 키는 서버로 전송되지 않습니다.
+  </footer>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
