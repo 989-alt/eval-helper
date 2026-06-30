@@ -88,6 +88,54 @@ function levelSqref(numElements, numStudents) {
   return `B2:${lastCol}${lastRow}`;
 }
 
+// ─── buildSkeletonEvalSet ────────────────────────────────────────────────────
+
+/**
+ * 카운트만으로 EvalSet 스켈레톤을 만든다. (엑셀 간편 양식 생성용)
+ * @param {number} numStudents       학생 수 (>=1)
+ * @param {number[]} criteriaCounts  과목별 평가기준 수 배열. length = 과목 수, 각 원소 = 그 과목의 기준 수(>=1)
+ * @returns {{ students: Array<{id,name}>, subjects: Array<{id,name,elements:Array<{id,name}>}>, scores: Object }}
+ */
+export function buildSkeletonEvalSet(numStudents, criteriaCounts) {
+  // numStudents: 정수 강제, 최소 1
+  const n = Math.max(1, numStudents | 0);
+
+  // criteriaCounts: 배열 여부 확인, 비어있으면 빈 배열로 취급
+  const counts = Array.isArray(criteriaCounts) ? criteriaCounts : [];
+
+  // students
+  const students = [];
+  for (let i = 0; i < n; i++) {
+    students.push({
+      id: `st${i}`,
+      name: `학생${i + 1}`,
+    });
+  }
+
+  // subjects
+  const subjects = [];
+  for (let i = 0; i < counts.length; i++) {
+    const k = Math.max(1, counts[i] | 0); // 각 과목 기준 수도 강제, 최소 1
+    const elements = [];
+    for (let j = 0; j < k; j++) {
+      elements.push({
+        id: `s${i}_e${j}`,
+        name: `평가기준${j + 1}`,
+      });
+    }
+    subjects.push({
+      id: `s${i}`,
+      name: `과목${i + 1}`,
+      elements,
+    });
+  }
+
+  // scores: 빈 객체
+  const scores = {};
+
+  return { students, subjects, scores };
+}
+
 // ─── buildWorkbook ────────────────────────────────────────────────────────────
 
 /**
