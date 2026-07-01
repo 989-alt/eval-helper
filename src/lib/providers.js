@@ -302,3 +302,75 @@ export async function generate(provider, apiKey, model, prompt, opts = {}) {
       throw new Error(`알 수 없는 프로바이더: ${provider}`);
   }
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// 파일(첨부) 포함 텍스트 생성 — 멀티모달 (평가 계획안 분석용)
+// ──────────────────────────────────────────────────────────────────────────────
+/**
+ * PDF·이미지 파일을 함께 첨부해 텍스트를 생성한다. Google·Anthropic만 지원.
+ * @param {'google'|'openai'|'anthropic'} provider
+ * @param {string} apiKey
+ * @param {string} model
+ * @param {string} prompt
+ * @param {{mime:string, base64:string}} file  base64는 data URL 접두사 없는 순수 base64
+ * @returns {Promise<string>}
+ */
+export async function generateWithFile(provider, apiKey, model, prompt, file) {
+  if (!file || !file.base64) throw new Error('첨부 파일이 없습니다.');
+  const isPdf = file.mime === 'application/pdf';
+
+  switch (provider) {
+    case 'google': {
+      const url =
+        `https://generativelanguage.googleapis.com/v1beta/models/` +
+        `${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const data = await apiFetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [
+            { text: prompt },
+            { inline_data: { mime_type: file.mime, data: file.base64 } },
+          ] }],
+        }),
+      }).catch((err) => { throw new Error(`Google 파일 분석 실패 (${model}): ${err.message}`); });
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text == null) throw new Error('Google 응답에서 텍스트를 찾을 수 없음');
+      return text;
+    }
+
+    case 'anthropic': {
+      const filePart = isPdf
+        ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: file.base64 } }
+        : { type: 'image', source: { type: 'base64', media_type: file.mime, data: file.base64 } };
+      const data = await apiFetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-beta': 'pdfs-2024-09-25',
+          'anthropic-dangerous-direct-browser-access': 'true',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 4096,
+          messages: [{ role: 'user', content: [{ type: 'text', text: prompt }, filePart] }],
+        }),
+      }).catch((err) => {
+        if (err.message.startsWith('HTTP 429')) throw new Error('Anthropic 요청 한도 초과 (429): 잠시 후 다시 시도하세요.');
+        throw new Error(`Anthropic 파일 분석 실패 (${model}): ${err.message}`);
+      });
+      const text = data?.content?.[0]?.text;
+      if (text == null) throw new Error('Anthropic 응답에서 텍스트를 찾을 수 없음');
+      return text;
+    }
+
+    case 'openai':
+      throw new Error('OpenAI는 이 앱에서 평가 계획안 파일 분석을 지원하지 않습니다. Google 또는 Anthropic 키를 사용하세요.');
+
+    default:
+      throw new Error(`알 수 없는 프로바이더: ${provider}`);
+  }
+}
+

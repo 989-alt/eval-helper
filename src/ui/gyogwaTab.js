@@ -4,8 +4,9 @@ import { LEVELS } from '../lib/levels.js';
 import { generateBank, generatePerStudent } from '../lib/gyogwaEngine.js';
 import { generate } from '../lib/providers.js';
 import { downloadTemplate, parseWorkbook, buildSkeletonEvalSet } from '../lib/excel.js';
-import { downloadDoc, downloadText } from '../lib/exporters.js';
-import { copyLine, sectionTitle, notice, levelCard, LEVEL_COLORS, btnLoading } from './components.js';
+import { generateFromPlan } from '../lib/aiPlanGen.js';
+import { notice, levelCard, LEVEL_COLORS, btnLoading } from './components.js';
+import { renderPlanResults } from './planResults.js';
 import { buildGyogwaPrompt } from '../lib/pyeoeoRules.js';
 import { toast } from '../lib/clipboard.js';
 
@@ -111,8 +112,40 @@ export function renderGyogwa(root) {
   upBtn.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', async () => {
     const f = fileInput.files[0]; if (!f) return;
-    try { showStudentResults(generatePerStudent(parseWorkbook(await f.arrayBuffer()))); }
+    try { renderPlanResults(xlsOut, generatePerStudent(parseWorkbook(await f.arrayBuffer())), { title: '교과 평어 (내장 생성)' }); }
     catch (e) { toast('엑셀 읽기 실패: ' + (e?.message || e)); }
+    finally { fileInput.value = ''; }
+  });
+
+  // ── AI 기준 분석 (채운 엑셀 + 평가 계획안 첨부, AI 전용) ──
+  const aiExcelInput = h('input', { type: 'file', accept: '.xlsx,.xls', class: 'hidden' });
+  const aiPlanInput = h('input', { type: 'file', accept: '.pdf,image/*', class: 'hidden' });
+  const aiExcelName = h('span', { class: 'text-xs text-gray-500' }, '선택된 엑셀 없음');
+  const aiPlanName = h('span', { class: 'text-xs text-gray-500' }, '선택된 계획안 없음');
+  aiExcelInput.addEventListener('change', () => { aiExcelName.textContent = aiExcelInput.files[0]?.name || '선택된 엑셀 없음'; });
+  aiPlanInput.addEventListener('change', () => { aiPlanName.textContent = aiPlanInput.files[0]?.name || '선택된 계획안 없음'; });
+  const aiExcelBtn = h('button', { class: 'text-sm bg-white text-gray-700 border border-gray-300 px-3 py-2 rounded hover:bg-gray-50 font-bold transition' }, '① 채운 엑셀 선택');
+  aiExcelBtn.addEventListener('click', () => aiExcelInput.click());
+  const aiPlanBtn = h('button', { class: 'text-sm bg-white text-gray-700 border border-gray-300 px-3 py-2 rounded hover:bg-gray-50 font-bold transition' }, '② 평가 계획안 선택 (PDF·이미지)');
+  aiPlanBtn.addEventListener('click', () => aiPlanInput.click());
+  const aiGenBtn = h('button', { class: 'text-sm bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 font-bold shadow transition' }, '🤖 AI로 기준 분석·생성');
+  aiGenBtn.addEventListener('click', async () => {
+    const ai = getState().ai;
+    if (!ai.apiKey || !ai.model) { toast('상단 카드에서 API 키와 모델을 선택하세요'); return; }
+    if (ai.provider === 'openai') { toast('OpenAI는 파일 분석 미지원. Google 또는 Anthropic 키를 사용하세요'); return; }
+    const ex = aiExcelInput.files[0], pl = aiPlanInput.files[0];
+    if (!ex) { toast('① 채운 엑셀을 선택하세요'); return; }
+    if (!pl) { toast('② 평가 계획안(PDF·이미지)을 선택하세요'); return; }
+    const restore = btnLoading(aiGenBtn, '분석 중…');
+    try {
+      const evalSet = parseWorkbook(await ex.arrayBuffer());
+      const file = { mime: pl.type || 'application/pdf', base64: await fileToBase64(pl) };
+      const rows = await generateFromPlan(ai, evalSet, file, (done, total, sub) => {
+        aiGenBtn.innerHTML = '<span class="inline-flex items-center justify-center gap-2"><span class="loader" style="display:inline-block"></span>분석 중… (' + done + '/' + total + ') ' + (sub || '') + '</span>';
+      });
+      renderPlanResults(xlsOut, rows, { title: '교과 평어 (AI 기준 분석)' });
+    } catch (e) { mount(xlsOut, notice('AI 기준 분석 실패: ' + (e?.message || e), 'warn')); }
+    finally { restore(); }
   });
 
   const excelPanel = h('div', { class: 'hidden mt-4 p-4 rounded-lg border border-teal-200 bg-teal-50 space-y-4' },
@@ -121,35 +154,19 @@ export function renderGyogwa(root) {
       h('label', { class: 'flex flex-col gap-1' }, h('span', { class: css.label }, '학생 수'), numStudentsInp),
       h('label', { class: 'flex flex-col gap-1' }, h('span', { class: css.label }, '과목 수'), numSubjectsInp)),
     critWrap,
-    h('div', { class: 'flex flex-wrap gap-2' }, tplBtn, upBtn, fileInput));
+    h('div', { class: 'flex flex-wrap gap-2' }, tplBtn, upBtn, fileInput),
+    h('div', { class: 'pt-4 border-t border-teal-200' },
+      h('p', { class: 'text-sm font-bold text-gray-700 mb-1' }, 'AI로 기준 분석 (평가 계획안 필요)'),
+      h('p', { class: 'text-xs text-gray-500 mb-2' }, '엑셀엔 평가 주제와 학생별 성취수준만 넣고, 세부 기준·루브릭은 학교 평가 계획안/도구표(PDF·이미지)를 첨부하면 AI가 분석해 평어를 만듭니다. Google 또는 Anthropic 키가 필요합니다.'),
+      h('div', { class: 'flex flex-wrap items-center gap-2' }, aiExcelBtn, aiExcelName),
+      h('div', { class: 'flex flex-wrap items-center gap-2 mt-2' }, aiPlanBtn, aiPlanName),
+      h('div', { class: 'mt-3' }, aiGenBtn),
+      aiExcelInput, aiPlanInput));
   const excelToggle = h('button', { class: 'text-sm bg-teal-50 text-teal-700 border border-teal-200 px-3 py-1.5 rounded hover:bg-teal-100 font-bold transition' }, '📊 엑셀로 한 번에');
   excelToggle.addEventListener('click', () => {
     excelPanel.classList.toggle('hidden');
     excelToggle.classList.toggle('bg-teal-100');
   });
-
-  function showStudentResults(rows) {
-    if (!rows.length) { mount(xlsOut, notice('생성할 점수가 없습니다. 엑셀에 성취수준을 입력했는지 확인하세요.', 'warn')); return; }
-    const byStudent = new Map();
-    rows.forEach((r) => { if (!byStudent.has(r.studentName)) byStudent.set(r.studentName, []); byStudent.get(r.studentName).push(r); });
-    const sections = [...byStudent.entries()].map(([name, items]) =>
-      h('div', { class: 'border border-gray-200 rounded-lg overflow-hidden' },
-        h('div', { class: 'bg-blue-50 px-4 py-2 border-b border-blue-100 font-bold text-blue-900 text-sm' }, name),
-        h('div', { class: 'p-2' }, ...items.map((r) => copyLine(r.text, { prefix: r.subjectName, accent: 'blue' })))));
-    mount(xlsOut, h('div', { class: css.card + ' animate-fade-in' },
-      h('div', { class: 'flex flex-wrap items-center justify-between gap-2 mb-4' },
-        h('div', {},
-          h('h3', { class: 'font-bold text-lg text-gray-800' }, rows.length + '개 평어 (학생별)'),
-          h('p', { class: 'text-xs text-gray-400 mt-0.5' }, '문장을 클릭하면 복사됩니다.')),
-        h('div', { class: 'flex gap-2' },
-          h('button', { class: 'text-sm bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 font-bold shadow transition', onClick: () => exportDoc(byStudent) }, '💾 한글(.doc)'),
-          h('button', { class: 'text-sm bg-white text-gray-600 border border-gray-200 px-3 py-2 rounded hover:bg-gray-50 font-bold transition', onClick: () => downloadText(rows.map((r) => `${r.studentName}\t${r.subjectName}\t${r.text}`).join('\n'), '평어.txt') }, '텍스트'))),
-      h('div', { class: 'grid gap-3' }, ...sections)));
-  }
-  function exportDoc(byStudent) {
-    const sections = [...byStudent.entries()].map(([name, items]) => ({ heading: name, lines: items.map((r) => ({ label: r.subjectName, text: r.text })) }));
-    downloadDoc('교과 평어', sections, '교과평어.doc');
-  }
 
   /* ── 생성 버튼 ───────────────────────────────────────────────────────── */
   const genBtn = h('button', { class: css.cta + ' bg-blue-600 hover:bg-blue-700' }, '내장 무료 생성');
@@ -196,6 +213,16 @@ export function renderGyogwa(root) {
     bankOut,
     xlsOut,
   ));
+}
+
+// 파일 → 순수 base64(data URL 접두사 제거)
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => { const s = String(reader.result); const i = s.indexOf(','); resolve(i >= 0 ? s.slice(i + 1) : s); };
+    reader.onerror = () => reject(reader.error || new Error('파일 읽기 실패'));
+    reader.readAsDataURL(file);
+  });
 }
 
 /* ── AI 평어 생성 (레벨 헤더 파싱) ──────────────────────────────────────── */
