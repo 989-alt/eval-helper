@@ -145,7 +145,7 @@ export function renderHaengbal(root) {
     let done = 0;
     for (const s of targets) {
       done++;
-      genBtn.textContent = `생성 중… (${done}/${targets.length})`;
+      genBtn.innerHTML = '<span class="inline-flex items-center justify-center gap-2"><span class="loader" style="display:inline-block"></span>생성 중… (' + done + '/' + targets.length + ')</span>';
       const name = s.name || ('학생' + s.id);
       const traits = [...s.checks.entries()]
         .map(([t, st]) => `${t}(${st === 1 ? '긍정' : '지도필요'})`).join(', ');

@@ -5,15 +5,16 @@ import { renderHaengbal } from './ui/haengbalTab.js';
 import { renderAI } from './ui/aiTab.js';
 
 const TABS = [
-  { id: 'ai', label: 'AI 설정', render: renderAI },
   { id: 'gyogwa', label: '교과 평어', render: renderGyogwa },
   { id: 'changche', label: '창의적 체험활동', render: renderChangche },
   { id: 'haengbal', label: '행동발달', render: renderHaengbal },
 ];
 
-// AI 설정을 첫 탭으로 배치하되, 처음 진입은 핵심 기능인 교과 평어로(내장 무료 엔진은 키 불필요).
 let current = location.hash.replace('#', '') || 'gyogwa';
 if (!TABS.find((t) => t.id === current)) current = 'gyogwa';
+
+// AI 설정은 탭이 아니라 상단 상시 카드로 1회 렌더 (어느 탭에서도 노출).
+renderAI(document.getElementById('apicard'));
 
 const tabbar = document.getElementById('tabbar');
 const app = document.getElementById('app');

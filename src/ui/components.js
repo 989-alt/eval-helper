@@ -61,6 +61,18 @@ export function tierBadge(tier) {
   return h('span', { class: 'text-[11px] px-2 py-0.5 rounded-full border ' + (map[tier] || 'bg-gray-50 text-gray-600 border-gray-200') }, labelMap[tier] || tier);
 }
 
+// 버튼 로딩 상태: 안의 내용을 스피너+텍스트로 바꾸고 비활성화. 반환한 함수로 원복.
+export function btnLoading(btn, loadingText) {
+  const prevHTML = btn.innerHTML;
+  const wasDisabled = btn.disabled;
+  btn.disabled = true;
+  btn.innerHTML =
+    '<span class="inline-flex items-center justify-center gap-2">' +
+    '<span class="loader" style="display:inline-block"></span>' +
+    String(loadingText) + '</span>';
+  return () => { btn.innerHTML = prevHTML; btn.disabled = wasDisabled; };
+}
+
 // 섹션 제목 (레퍼런스: font-bold text-lg text-gray-800)
 export function sectionTitle(text, sub) {
   return h('div', { class: 'mb-4' },
