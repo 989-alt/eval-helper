@@ -6,6 +6,7 @@ import { generate } from '../lib/providers.js';
 import { downloadTemplate, parseWorkbook, buildSkeletonEvalSet } from '../lib/excel.js';
 import { downloadDoc, downloadText } from '../lib/exporters.js';
 import { copyLine, sectionTitle, notice, levelCard, LEVEL_COLORS, btnLoading } from './components.js';
+import { buildGyogwaPrompt } from '../lib/pyeoeoRules.js';
 import { toast } from '../lib/clipboard.js';
 
 export function renderGyogwa(root) {
@@ -199,13 +200,7 @@ export function renderGyogwa(root) {
 
 /* ── AI 평어 생성 (레벨 헤더 파싱) ──────────────────────────────────────── */
 async function aiBank(ai, name, counts) {
-  const want = LEVELS.filter((lv) => counts[lv] > 0)
-    .map((lv) => `${lv} ${counts[lv]}개`).join(', ');
-  const prompt = `초등 교과 평어를 만들어줘. 평가요소는 "${name}". 성취수준별로 ${want} 생성.\n` +
-    `규칙: 각 평어는 한 문장, 명사형 어미(~함, ~임)로 종결, 특수문자와 영어 금지(마침표 쉼표만), 기업이나 제품 이름 금지, 모두 서로 다르게. ` +
-    `매우잘함은 정확하게/능숙하게 같은 강조 표현, 보통은 기본 개념 이해 수준, 노력요함은 긍정적 성장 표현으로.\n` +
-    `출력 형식: 각 수준을 [매우잘함] 처럼 대괄호 머리로 표시하고 그 아래 한 줄에 하나씩.`;
-  const res = await generate(ai.provider, ai.apiKey, ai.model, prompt);
+  const res = await generate(ai.provider, ai.apiKey, ai.model, buildGyogwaPrompt(name, counts));
   const bank = {}; LEVELS.forEach((lv) => bank[lv] = []);
   let cur = null;
   for (const raw of res.split('\n')) {

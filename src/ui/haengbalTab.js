@@ -1,6 +1,7 @@
 import { h, mount, css } from './dom.js';
 import { getState } from '../lib/store.js';
 import { generate } from '../lib/providers.js';
+import { buildHaengbalPrompt } from '../lib/pyeoeoRules.js';
 import { copyLine, sectionTitle, notice } from './components.js';
 import { toast } from '../lib/clipboard.js';
 
@@ -148,17 +149,9 @@ export function renderHaengbal(root) {
       genBtn.innerHTML = '<span class="inline-flex items-center justify-center gap-2"><span class="loader" style="display:inline-block"></span>생성 중… (' + done + '/' + targets.length + ')</span>';
       const name = s.name || ('학생' + s.id);
       const traits = [...s.checks.entries()]
-        .map(([t, st]) => `${t}(${st === 1 ? '긍정' : '지도필요'})`).join(', ');
-      const prompt =
-        `당신은 담임 교사입니다. 아래 학생 특성을 바탕으로 학교생활기록부 행동특성 및 종합의견을 작성하세요.\n` +
-        `학생: ${name}\n특성: ${traits}\n` +
-        `규칙:\n1. 분량: 공백 포함 약 ${minChars}~${maxChars}자.\n` +
-        `2. 어미: "~함.", "~임." 명사형으로 끝내고 주어는 생략.\n` +
-        `3. 특수문자(마침표·쉼표 제외)와 영어 사용 금지.\n` +
-        `4. 긍정 특성은 강점으로, 지도필요 특성은 성장 방향으로 자연스럽게 서술.\n` +
-        `한 단락으로만 출력하세요.`;
+        .map(([t, st]) => `${t} ${st === 1 ? '긍정' : '지도필요'}`).join(', ');
       try {
-        const res = await generate(ai.provider, ai.apiKey, ai.model, prompt);
+        const res = await generate(ai.provider, ai.apiKey, ai.model, buildHaengbalPrompt(name, traits, minChars, maxChars));
         resultsWrap.append(resultCard(name, res.trim()));
       } catch (e) {
         resultsWrap.append(notice(`${name} 생성 실패: ${e?.message || e}`, 'warn'));

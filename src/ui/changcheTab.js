@@ -1,7 +1,8 @@
 import { h, mount, css } from './dom.js';
 import { getState } from '../lib/store.js';
-import { vary, buildPrompt } from '../lib/changcheEngine.js';
+import { vary } from '../lib/changcheEngine.js';
 import { generate } from '../lib/providers.js';
+import { buildChangchePrompt } from '../lib/pyeoeoRules.js';
 import { copyLine, notice, btnLoading } from './components.js';
 import { toast } from '../lib/clipboard.js';
 
@@ -72,7 +73,7 @@ export function renderChangche(root) {
     try {
       const results = [];
       for (const it of valid) {
-        const res = await generate(ai.provider, ai.apiKey, ai.model, buildPrompt(it.text.trim(), it.count));
+        const res = await generate(ai.provider, ai.apiKey, ai.model, buildChangchePrompt(it.text.trim(), it.count));
         const variations = res.split('\n').map((l) => l.replace(/^\s*\d+[.)]\s*/, '').trim()).filter(Boolean).slice(0, it.count);
         results.push({ original: it.text.trim(), variations });
       }
