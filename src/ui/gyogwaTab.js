@@ -13,7 +13,7 @@ export function renderGyogwa(root) {
 
   let standards = [''];
   const bankOut = h('div', { class: 'mt-6' });
-  const stdWrap = h('div', { class: 'mt-3 grid gap-2' });
+  const stdWrap = h('div', { class: 'grid gap-2' });
 
   function syncStandardsFromDOM() {
     const inputs = stdWrap.querySelectorAll('input');
@@ -53,7 +53,7 @@ export function renderGyogwa(root) {
 
   /* 4수준 카운트 입력 */
   const countInputs = {};
-  const countRow = h('div', { class: 'grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4' },
+  const countRow = h('div', { class: 'grid grid-cols-2 sm:grid-cols-4 gap-3' },
     ...LEVELS.map((lv) => {
       const inp = h('input', {
         class: css.input + ' w-16 text-right',
@@ -159,15 +159,22 @@ export function renderGyogwa(root) {
 
   const cardA = h('div', { class: css.card },
     sectionTitle('수준별 평어', '성취기준(평가요소)을 여러 개 넣고 한 번에 만들 수 있습니다. 문장을 클릭하면 복사됩니다.'),
-    h('div', { class: 'flex items-center justify-between mb-1' },
-      h('span', { class: 'text-sm font-bold text-gray-600' }, '성취기준 · 평가요소'),
-      addStdBtn,
-    ),
-    stdWrap,
-    countRow,
-    h('div', { class: 'flex flex-col sm:flex-row gap-2 mt-5' },
-      h('div', { class: 'flex-1' }, genBtn),
-      aiBtn,
+    h('div', { class: 'space-y-5' },
+      h('div', {},
+        h('div', { class: 'flex items-center justify-between mb-2' },
+          h('span', { class: css.label }, '성취기준 · 평가요소'),
+          addStdBtn,
+        ),
+        stdWrap,
+      ),
+      h('div', {},
+        h('div', { class: css.label + ' mb-2' }, '수준별 생성 개수'),
+        countRow,
+      ),
+      h('div', { class: 'flex flex-col sm:flex-row gap-2 pt-1' },
+        h('div', { class: 'flex-1' }, genBtn),
+        aiBtn,
+      ),
     ),
   );
 
@@ -175,7 +182,7 @@ export function renderGyogwa(root) {
 
   const xlsOut = h('div', { class: 'mt-4' });
   let critCounts = [3];
-  const critWrap = h('div', { class: 'flex flex-wrap gap-3 mt-3' });
+  const critWrap = h('div', { class: 'flex flex-wrap gap-3' });
 
   function syncCritFromDOM() {
     const inputs = critWrap.querySelectorAll('input');
@@ -189,7 +196,7 @@ export function renderGyogwa(root) {
         type: 'number', min: '1', max: '20', value: String(val),
       });
       inp.addEventListener('input', () => { critCounts[i] = Math.max(1, parseInt(inp.value) || 1); });
-      return h('label', { class: 'flex items-center gap-1' },
+      return h('label', { class: 'flex flex-col gap-1' },
         h('span', { class: css.label }, '과목' + (i + 1) + ' 기준 수'),
         inp,
       );
@@ -286,19 +293,21 @@ export function renderGyogwa(root) {
 
   const cardB = h('div', { class: css.card + ' mt-6' },
     sectionTitle('엑셀로 한 번에 입력하기', '학생 수와 과목 수, 과목별 평가기준 수만 입력하면 양식을 받아 한 번에 채울 수 있습니다.'),
-    h('div', { class: 'flex flex-wrap gap-4 items-end' },
-      h('label', { class: 'flex flex-col gap-1' },
-        h('span', { class: css.label }, '학생 수'),
-        numStudentsInp,
+    h('div', { class: 'space-y-5' },
+      h('div', { class: 'flex flex-wrap gap-3' },
+        h('label', { class: 'flex flex-col gap-1' },
+          h('span', { class: css.label }, '학생 수'),
+          numStudentsInp,
+        ),
+        h('label', { class: 'flex flex-col gap-1' },
+          h('span', { class: css.label }, '과목 수'),
+          numSubjectsInp,
+        ),
       ),
-      h('label', { class: 'flex flex-col gap-1' },
-        h('span', { class: css.label }, '과목 수'),
-        numSubjectsInp,
-      ),
+      critWrap,
+      h('div', { class: 'flex flex-wrap gap-2' }, tplBtn, upBtn, fileInput),
+      notice('① 양식 다운로드 → ② 엑셀에서 시트 이름(과목명)·평가기준 제목·성취수준을 채우기 → ③ 업로드. 빈 칸이나 미실시는 건너뜁니다.'),
     ),
-    critWrap,
-    h('div', { class: 'flex flex-wrap gap-2 mt-4' }, tplBtn, upBtn, fileInput),
-    notice('① 양식 다운로드 → ② 엑셀에서 시트 이름(과목명)·평가기준 제목·성취수준을 채우기 → ③ 업로드. 빈 칸이나 미실시는 건너뜁니다.'),
   );
 
   /* ── 초기 렌더 및 최종 mount ──────────────────────────────────────────── */

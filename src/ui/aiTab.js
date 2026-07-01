@@ -8,7 +8,7 @@ export function renderAI(root) {
   const s = getState();
   const ai = s.ai;
 
-  const providerSel = h('select', { class: css.input },
+  const providerSel = h('select', { class: css.input + ' w-full' },
     ...PROVIDERS.map((p) => h('option', { value: p.id, selected: p.id === ai.provider }, p.label))
   );
   const keyInput = h('input', { class: css.input + ' w-full', type: 'password', value: ai.apiKey, placeholder: 'API 키 붙여넣기 (브라우저에만 저장)' });
@@ -24,7 +24,7 @@ export function renderAI(root) {
     if (!models?.length) { mount(modelWrap, notice('키를 넣고 모델을 불러오면 실제 사용 가능한 모델만 표시됩니다.')); return; }
     mount(modelWrap,
       sectionTitle('모델 선택', '비용 티어는 모델명 기준 자동 추천입니다.'),
-      h('div', { class: 'flex flex-col gap-1 max-h-80 overflow-auto' },
+      h('div', { class: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-96 overflow-auto custom-scrollbar pr-1' },
         ...models.map((m) => {
           const id = m.id;
           const sel = id === getState().ai.model;
@@ -58,12 +58,12 @@ export function renderAI(root) {
   });
 
   mount(root,
-    h('div', { class: css.card + ' max-w-2xl' },
+    h('div', { class: css.card + ' animate-fade-in' },
       sectionTitle('AI 설정 (선택)', '키를 넣지 않아도 내장 무료 엔진으로 교과·창체 평어를 만들 수 있습니다. 키를 넣으면 더 자연스러운 AI 생성과 행동발달 생성을 쓸 수 있습니다.'),
-      h('div', { class: 'grid gap-3 mt-2' },
-        h('div', {}, h('div', { class: css.label }, '제공자'), providerSel),
-        h('div', {}, h('div', { class: css.label }, 'API 키'), keyInput),
-        h('div', {}, loadBtn),
+      h('div', { class: 'flex flex-col md:flex-row md:items-end gap-3' },
+        h('div', { class: 'md:w-56' }, h('div', { class: css.label + ' mb-1' }, '제공자'), providerSel),
+        h('div', { class: 'flex-1' }, h('div', { class: css.label + ' mb-1' }, 'API 키'), keyInput),
+        h('div', { class: 'shrink-0' }, loadBtn),
       ),
       modelWrap,
       h('p', { class: 'text-xs text-gray-400 mt-3' }, 'OpenAI는 브라우저에서 직접 호출이 제한될 수 있습니다. 이 경우 Google 또는 Anthropic 키 사용을 권장합니다.'),

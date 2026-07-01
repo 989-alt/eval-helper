@@ -155,9 +155,12 @@ export function buildWorkbook(evalSet) {
   const wb = XLSX.utils.book_new();
   const usedNames = new Set();
 
+  // 안내 시트를 맨 앞에 둔다 (파일을 열면 작성 방법이 가장 먼저 보이도록).
+  _appendGuideSheet(wb, usedNames);
+
   for (const subj of subjects) {
     const elements = subj.elements ?? [];
-    const header = ['학생', ...elements.map(e => e.name)];
+    const header = ['학생 이름', ...elements.map(e => e.name)];
     const dataRows = students.map(st => [st.name, ...elements.map(() => '')]);
     const ws = XLSX.utils.aoa_to_sheet([header, ...dataRows]);
 
@@ -188,9 +191,6 @@ export function buildWorkbook(evalSet) {
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
   }
 
-  // 안내 시트 — SheetJS 무료판 dataValidation 미지원 대체
-  _appendGuideSheet(wb, usedNames);
-
   return wb;
 }
 
@@ -198,15 +198,22 @@ export function buildWorkbook(evalSet) {
 function _appendGuideSheet(wb, usedNames) {
   const XLSX = getXLSX();
   const aoa = [
-    ['성취수준 입력 안내'],
+    ['📋 작성 방법 — 아래 순서대로 채운 뒤 앱에 업로드하세요'],
     [''],
-    ['입력 가능한 값 (셀에 직접 입력하세요)'],
-    ...VALID_TOKENS.map(t => [t]),
+    ['① 과목', '아래쪽 시트 탭(과목1, 과목2 …)의 이름을 실제 과목명으로 바꾸세요.'],
+    ['', '   (탭 이름을 더블클릭 → 예: "과목1" → "국어")'],
+    ['② 평가기준', '각 과목 시트의 1행(맨 윗줄)에 있는 "평가기준1, 평가기준2 …"를'],
+    ['', '   실제 평가기준으로 바꿔 쓰세요.  ← 평가기준은 바로 여기(1행 헤더)에 입력합니다.'],
+    ['③ 성취수준', '2행부터 학생 이름 옆 칸에 학생별 성취수준을 입력하세요.'],
     [''],
-    ['비고', '빈 칸 또는 "미실시" 입력 시 해당 평어를 생성하지 않습니다.'],
+    ['성취수준 입력값 (셀에 아래 중 하나를 직접 입력)'],
+    ...VALID_TOKENS.map(t => ['', t]),
+    [''],
+    ['빈 칸 또는 "미실시"', '해당 평어를 생성하지 않고 건너뜁니다.'],
+    ['④ 저장 후', '앱의 "엑셀 양식 업로드" 버튼을 누르면 학생별 평어가 만들어집니다.'],
   ];
   const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols'] = [{ wch: 20 }, { wch: 52 }];
+  ws['!cols'] = [{ wch: 16 }, { wch: 62 }];
 
   const guideName = usedNames.has(GUIDE_SHEET) ? '입력안내' : GUIDE_SHEET;
   usedNames.add(guideName);
